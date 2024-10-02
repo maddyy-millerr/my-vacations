@@ -1,0 +1,67 @@
+/*
+    Below are some basic universal rules for all the layouts.
+    Author: Salomón Villasmil Alvarado
+    Date: 09/27/2023
+*/
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: black;
+    background-color: #a5ff95;
+    margin: 0;
+}
+
+/*
+    Below are the fundamental rules for the cards and images.
+    Author: Salomón Villasmil Alvarado
+    Date: 09/27/2024
+*/
+.cards {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border: 5px solid black;
+    border-radius: 10px;
+    box-shadow: 0px 5px 5px gray;
+    margin: 20px;
+    text-align: center;
+}
+img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 5px;
+}
+.text_box {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/*
+    Below is a media query to improve the desktop experience and demonstrate the resolution switching and art direction.
+    Author: Salomón Villasmil Alvarado
+    Date: 09/27/2024
+*/
+@media screen and (min-width: 500px) {
+    .cards {
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-width: 500px;
+        text-align: left;
+        position: relative;
+    }
+    img {
+        width: 50%;
+        height: 100%;
+    }
+    .text_box {
+        text-align: center;
+        padding-left: 5px;
+        padding-right: 0;
+        position: absolute;
+        top: 0;
+        right: 0;
+        max-width: 50%;
+    }
+}
+
