@@ -77,3 +77,39 @@ self.addEventListener("fetch", (event) => {
             }
         })()
 });
+
+//send a message to the client
+function sendMessageToPWA(message) {
+    self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+            client.postMessage(message);
+        });
+    });
+}
+
+//send  a message every ten seconds
+setInterval(() => {
+    sendMessageToPWA({type: "update", data: "New data available"});
+}, 10000);
+
+//listen for messages from the app
+self.addEventListener("message", (event) => {
+    console.log("Service workers received a message: ", event.data);
+
+    //can respond back if needed
+    event.source.postMessage({
+        type: "response",
+        data: "message received by SW"
+    });
+});
+
+//create a broadcast channel - name here needs to match the name in the app
+const channel = new BroadcastChannel("pwa_channel");
+
+//listen for messages
+channel.onmessage = (event) => {
+    console.log("Received a message in Service Worker: ", event.data);
+    
+    //echo the message back to the PWA
+    channel.postMessage("Service Worker received: " + event.data);
+};

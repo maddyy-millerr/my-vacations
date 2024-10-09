@@ -119,5 +119,56 @@ function formatDate(dateString) {
   return date.toLocaleDateString("en-US", {timeZone: UTC});
 }//formatDate
 
-//start the app by rendering the past vacations to 
+//start the app by rendering the past vacations on load, if any.
 renderPastVacations();
+
+//register the service worker
+if ("serviceWork" in navigator) {
+  navigator.serviceWorker
+    .register("sw.js")
+    .then((registration)=>{
+      console.log("Service worker registered with scope: ", registration.scope);
+    })
+    .catch((error)=>{
+      console.error("Service worker registration failed", error);
+    });
+}
+
+// //listen for messages from the service worker
+// navigator.serviceWorker.addEventListener("message", (event)=>{
+//   console.log("Received a message from service worker: ", event.data);
+
+//   //handle different message types
+//   if (event.data.type === "update") {
+//     console.log("Update received: ", event.data.data);
+//     //update your UI or perform some action
+//   }
+// });
+
+// //function to send a message to the service worker
+// function sendMessageToSW(message) {
+//   if (navigator.serviceWorker.controller) {
+//     navigator.serviceWorker.controller.postMessage(message);
+//   }
+// }
+
+// document.getElementById("sendButton").addEventListener("click", ()=>{
+//   sendMessageToSW({type: "action", data: "Button clicked"});
+// });
+
+//create a broadcast channel - name here needs to match the name in the sw
+const channel = new BroadcastChannel("pwa_channel");
+
+//listen for messages
+channel.onmessage = (event) => {
+  console.log("Received a message in PWA: ", event.data);
+  document.getElementById("messages")
+  .insertAdjacentHTML("beforeend", `<p>Received: ${event.data}</p>`);
+};
+
+//send a message when the button is clicked
+document.getElementById("sendButton").addEventListener("click", ()=>{
+  const message = "Hello from PWA!";
+  channel.postMessage(message);
+  console.log("Sent message from PWA: ", message);
+});
