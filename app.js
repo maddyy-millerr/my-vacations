@@ -123,7 +123,7 @@ function formatDate(dateString) {
 renderPastVacations();
 
 //register the service worker
-if ("serviceWork" in navigator) {
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("sw.js")
     .then((registration)=>{
@@ -225,7 +225,7 @@ document.getElementById("dataForm")
     const data = document.getElementById("dataInput").value;
 
     //need to check if both the serviceworker and SyncManager are available
-    if("serveWorker" in navigator && "SyncManager" in window) {
+    if("serviceWorker" in navigator && "SyncManager" in window) {
       //good to add data to db for offline persistence
       addDataToIndexedDB(data)
         .then(() => navigator.serviceWorker.ready) //wait for service worker to be ready
