@@ -172,3 +172,99 @@ document.getElementById("sendButton").addEventListener("click", ()=>{
   channel.postMessage(message);
   console.log("Sent message from PWA: ", message);
 });
+
+//open or create the database
+let db;
+const dbName = "SyncDatabase";
+const request = indexedDB.open(dbName, 1);
+
+request.onerror = function (event) {
+  console.error("Database error: " + event.target.error);
+};
+
+request.onsuccess = function (event) {
+  //now we actually have our db
+  db = event.target.result;
+  console.log("Database opened successfully");
+};
+
+request.onupgradeneeded = function (event){
+  db = event.target.result;
+
+  //create any new object stores for our db or delete any old ones from a previous version
+  const objectStore = db.createObjectStore("pendingData",
+    {
+      keyPath: "id",
+      autoIncrement: true
+    }
+  );
+};
+
+//add data to our db, we need a transaction to accomplish it
+function addDataToIndexedDB(data) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["pendingData"], "readwrite");
+    const objectStore = transaction.objectStore("pendingData");
+    const request = objectStore.add({data: data});
+
+    request.onsuccess = function(event) {
+      resolve();
+    };
+    request.onerror = function(event) {
+      reject("Error storing data: " + event.target.error);
+    };
+  });
+}
+
+//handle form submission
+document.getElementById("dataForm")
+  .addEventListener("submit", function(event){
+    event.preventDefault(); // wont send to server now
+
+    //get data
+    const data = document.getElementById("dataInput").value;
+
+    //need to check if both the serviceworker and SyncManager are available
+    if("serveWorker" in navigator && "SyncManager" in window) {
+      //good to add data to db for offline persistence
+      addDataToIndexedDB(data)
+        .then(() => navigator.serviceWorker.ready) //wait for service worker to be ready
+        .then((registration) => {
+          //registers a sync event for when the device comes online
+          return registration.sync.register("send-data");
+        })
+        .then(() => {
+          //update UI for successful registration
+          document.getElementById("status").textContent = "Sync registered, data will be sent when online"
+        })
+        .catch((error) => {
+          console.error("Error: ", error);
+        });
+    } else {
+      //background sync isnt supported, try to send immediately
+      sendData(data)
+        .then((result) => {
+          //update UI
+          document.getElementById("status").textContent = result;
+        })
+        .catch((error) => {
+          //update UI
+          document.getElementById("status").textContent = error.message;
+        });
+    }
+  });
+
+  //simulate sending data
+  function sendData(data) {
+    console.log("Attempting to send data: ", data);
+
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if(Math.random() > 0.5) {
+          resolve("data sent successfullly");
+        } else {
+          reject(new Error("Failed to send data"));
+        }
+      }, 1000);
+    });
+  }
